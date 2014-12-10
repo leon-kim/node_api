@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost');
+mongoose.connect('mongodb://localhost/test:27017');
 
 //configure app to use bodyParser()
 //this will let us get the data from a POST
@@ -23,7 +23,7 @@ router.use(function(req, res, next){
 });
 
 router.route('/users')
-  .post(function(req, res){
+  .post(function (req, res){
     var user = new User();
     user.name = req.body.name;
 
@@ -33,9 +33,26 @@ router.route('/users')
     res.json({message:'user created succesfully.'});
   });
 
+router.route('/users/:user_id')  
+  .get(function (req, res){
+    User.findById(req.params.user_id, function(err, user){
+      if (err) res.send(err);
+      res.json(user);
+    });
+  })
+  .put(function (req, res){
+    User.findById(req.params.user_id, function(err, user){
+      if(err) res.send(err);
 
-  
+      user.name = req.body.name;
 
+      user.save(function(err){
+        if (err) res.send(err);
+
+        res.json({message: 'User updated!'});
+      })
+    })
+  });
 
 app.use('/api', router);
 
